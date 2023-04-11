@@ -1,3 +1,4 @@
 {
-  "rpcEndpoint": "https://nois-testnet-rpc.itrocket.net:443"
+  "rpcEndpoint": "https://nois-testnet-rpc.itrocket.net:443",
+  "// rpcEndpoint": "https://rpc-nois.sr20de.xyz:443"
 }

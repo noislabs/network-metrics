@@ -3,10 +3,11 @@ import { Coin } from "npm:@cosmjs/stargate";
 import { Decimal } from "npm:@cosmjs/math";
 import { toUtf8 } from "npm:@cosmjs/encoding";
 import { HttpBatchClient, Tendermint34Client } from "npm:@cosmjs/tendermint-rpc";
-import * as client from "npm:prom-client";
+import * as promclient from "npm:prom-client";
+import express from "npm:express@4.18.2";
 
-import { accountsMainnet } from "./accounts_mainnet.ts";
-import { accountsTestnet } from "./accounts_testnet.ts";
+import settings from "./settings.ts";
+import { communityPoolFunds, totalSupply } from "./queries.ts";
 
 function printableCoin(coin: Coin): string {
   if (coin.denom?.startsWith("u")) {
@@ -23,13 +24,12 @@ export interface Account {
   readonly denom: "unois";
 }
 
-const accounts: Account[] = accountsTestnet;
-
 function debugLog(msg: string) {
-  Deno.stderr.writeSync(toUtf8(msg + "\n"));
+  Deno.stderr.writeSync(toUtf8(`[${new Date().toISOString()}] ` + msg + "\n"));
 }
+
 function errorLog(msg: string) {
-  Deno.stderr.writeSync(toUtf8(msg + "\n"));
+  Deno.stderr.writeSync(toUtf8(`[${new Date().toISOString()}] ` + msg + "\n"));
 }
 
 if (import.meta.main) {
@@ -37,19 +37,77 @@ if (import.meta.main) {
     assert: { type: "json" },
   });
 
+  const app = express();
+
   const balances = new Map<string, string>();
+
+  const balancesGauge = new promclient.Gauge({
+    name: "balances",
+    help: "Account balances in NOIS",
+    labelNames: ["account"] as const,
+  });
+
+  // Updates all gauges with the current balances
+  const gaugify = () => {
+    for (const [key, val] of balances.entries()) {
+      balancesGauge.set({ account: key }, parseInt(val, 10) / 1_000_000);
+    }
+  };
+
+  // deno-lint-ignore no-explicit-any
+  app.get("/metrics", (_req: any, res: any) => {
+    gaugify();
+
+    res.set("Content-Type", promclient.register.contentType);
+    promclient.register.metrics().then((metrics) => res.end(metrics));
+  });
 
   const httpBatch = new HttpBatchClient(config.rpcEndpoint);
   const tmClient = await Tendermint34Client.create(httpBatch);
   const client = await CosmWasmClient.create(tmClient);
 
-  setInterval(() => {
-    debugLog("Getting balances ...");
+  const chainId = await client.getChainId();
+  debugLog(`Connected to ${chainId}`);
+
+  const accounts = settings[chainId].accounts;
+
+  const updateAccounts = () => {
+    // debugLog("Getting balances ...");
     for (const account of accounts) {
       client.getBalance(account.address, account.denom).then((balance) => {
         debugLog(`${account.name}: ${printableCoin(balance)}`);
         balances.set(account.name, balance.amount);
       }, (err) => errorLog(err.toString()));
     }
-  }, 10_000);
+  };
+
+  const updateTotalSupply = () => {
+    totalSupply(tmClient, "unois").then((balance) => {
+      const exportAccountName = "total supply";
+      debugLog(`${exportAccountName}: ${printableCoin(balance)}`);
+      balances.set(exportAccountName, balance.amount);
+    }, (err) => errorLog(err.toString()));
+  };
+
+  const updateCommunityPool = () => {
+    communityPoolFunds(tmClient, "unois").then((balance) => {
+      const exportAccountName = "community pool";
+      debugLog(`${exportAccountName}: ${printableCoin(balance)}`);
+      balances.set(exportAccountName, balance.amount);
+    }, (err) => errorLog(err.toString()));
+  };
+
+  // Initial call
+  updateAccounts();
+  updateTotalSupply();
+  updateCommunityPool();
+
+  setInterval(updateAccounts, 10_000);
+  setInterval(updateTotalSupply, 45_000);
+  setInterval(updateCommunityPool, 100_000);
+
+  const port = 3000;
+  app.listen(port, function () {
+    debugLog(`Listening on port ${port} ...`);
+  });
 }
