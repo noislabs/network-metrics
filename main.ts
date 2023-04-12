@@ -61,7 +61,7 @@ if (import.meta.main) {
   const rpcEndpoint = process.env.RPC_ENDPOINT;
   if (!rpcEndpoint) {
     console.error('RPC_ENDPOINT environment variable is not defined');
-    process.exit(1); // Exit the process with a non-zero code to indicate failure
+    Deno.exit(1); // Exit the process with a non-zero code to indicate failure
   }
   const httpBatch = new HttpBatchClient(rpcEndpoint);
   const tmClient = await Tendermint34Client.create(httpBatch);
