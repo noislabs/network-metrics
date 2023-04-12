@@ -17,6 +17,11 @@ const settings: Record<string, ChainSettings> = {
         address: "nois1gwnfyx82rwgc4y9r8vx6nr9v35dwezw3dadw6h39mad9amg7shnsler5f0",
         denom: "unois",
       },
+      {
+        name: "sink",
+        address: "nois10c0ppz0n57hqrmfp7g7lqs6k4xk9rxhvcfkqt83r8mars2lc57mq0f6cty",
+        denom: "unois",
+      },
     ],
   },
   "nois-testnet-005": {
@@ -29,6 +34,11 @@ const settings: Record<string, ChainSettings> = {
       {
         name: "icecube",
         address: "nois1gwnfyx82rwgc4y9r8vx6nr9v35dwezw3dadw6h39mad9amg7shnsler5f0",
+        denom: "unois",
+      },
+      {
+        name: "sink",
+        address: "nois10c0ppz0n57hqrmfp7g7lqs6k4xk9rxhvcfkqt83r8mars2lc57mq0f6cty",
         denom: "unois",
       },
     ],
