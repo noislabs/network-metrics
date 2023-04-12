@@ -7,7 +7,7 @@ Run
 ```sh
 # make sure deno is installed
 export RPC_ENDPOINT=https://nois-testnet-rpc.itrocket.net:443
-deno run --allow-read --allow-net --allow-env main.ts`
+deno run --allow-read --allow-net --allow-env main.ts
 ```
 
 Or you can run against all hosts (please don't spam all these RPCs for an extended time)
