@@ -58,7 +58,7 @@ if (import.meta.main) {
     promclient.register.metrics().then((metrics) => res.end(metrics));
   });
 
-  const rpcEndpoint = process.env.RPC_ENDPOINT;
+  const rpcEndpoint = Deno.env.get("RPC_ENDPOINT");
   if (!rpcEndpoint) {
     console.error('RPC_ENDPOINT environment variable is not defined');
     Deno.exit(1); // Exit the process with a non-zero code to indicate failure
