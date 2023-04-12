@@ -10,6 +10,13 @@ RPC_ENDPOINT=https://nois-testnet-rpc.itrocket.net:443
 deno run --allow-read --allow-net --allow-env main.ts`
 ```
 
+Or you can run against all hosts (please don't spam all these RPCs for an extended time)
+
+```shell
+# make sure deno is installed
+docker compose up
+```
+
 ## Installation
 
 On a Ubuntu server do:
