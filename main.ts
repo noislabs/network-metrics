@@ -5,7 +5,6 @@ import { toUtf8 } from "npm:@cosmjs/encoding";
 import { HttpBatchClient, Tendermint34Client } from "npm:@cosmjs/tendermint-rpc";
 import * as promclient from "npm:prom-client";
 import express from "npm:express@4.18.2";
-
 import settings from "./settings.ts";
 import { communityPoolFunds, totalSupply } from "./queries.ts";
 
@@ -33,9 +32,6 @@ function errorLog(msg: string) {
 }
 
 if (import.meta.main) {
-  const { default: config } = await import("./config.json", {
-    assert: { type: "json" },
-  });
 
   const app = express();
 
@@ -44,13 +40,13 @@ if (import.meta.main) {
   const balancesGauge = new promclient.Gauge({
     name: "balances",
     help: "Account balances in NOIS",
-    labelNames: ["account"] as const,
+    labelNames: ["account", "rpcEndpoint"] as const,
   });
 
   // Updates all gauges with the current balances
   const gaugify = () => {
     for (const [key, val] of balances.entries()) {
-      balancesGauge.set({ account: key }, parseInt(val, 10) / 1_000_000);
+      balancesGauge.set({ account: key, rpcEndpoint }, parseInt(val, 10) / 1_000_000);
     }
   };
 
@@ -62,12 +58,17 @@ if (import.meta.main) {
     promclient.register.metrics().then((metrics) => res.end(metrics));
   });
 
-  const httpBatch = new HttpBatchClient(config.rpcEndpoint);
+  const rpcEndpoint = Deno.env.get("RPC_ENDPOINT");
+  if (!rpcEndpoint) {
+    console.error('RPC_ENDPOINT environment variable is not defined');
+    Deno.exit(1); // Exit the process with a non-zero code to indicate failure
+  }
+  const httpBatch = new HttpBatchClient(rpcEndpoint);
   const tmClient = await Tendermint34Client.create(httpBatch);
   const client = await CosmWasmClient.create(tmClient);
 
   const chainId = await client.getChainId();
-  debugLog(`Connected to ${chainId}`);
+  debugLog(`Connected to ${chainId} via ${rpcEndpoint}`);
 
   const accounts = settings[chainId].accounts;
 
