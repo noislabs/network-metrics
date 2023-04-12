@@ -4,7 +4,7 @@
 
 Run
 
-```shell
+```sh
 # make sure deno is installed
 RPC_ENDPOINT=https://nois-testnet-rpc.itrocket.net:443
 deno run --allow-read --allow-net --allow-env main.ts`
