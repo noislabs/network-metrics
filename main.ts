@@ -5,7 +5,6 @@ import { toUtf8 } from "npm:@cosmjs/encoding";
 import { HttpBatchClient, Tendermint34Client } from "npm:@cosmjs/tendermint-rpc";
 import * as promclient from "npm:prom-client";
 import express from "npm:express@4.18.2";
-import process from 'node:process';
 import settings from "./settings.ts";
 import { communityPoolFunds, totalSupply } from "./queries.ts";
 
