@@ -1,0 +1,38 @@
+version: '3'
+
+x-base-config: &base-config
+  image: docker.io/noislabs/nois-network-metrics:latest
+  environment:
+    RPC_ENDPOINT: ${RPC_ENDPOINT}
+
+services:
+  nois-testnet-005-0:
+    <<: *base-config
+    ports:
+      - "18000:3000"
+    environment:
+      RPC_ENDPOINT: https://nois-testnet-rpc.itrocket.net:443
+  nois-testnet-005-1:
+    <<: *base-config
+    ports:
+      - "18001:3000"
+    environment:
+      RPC_ENDPOINT: https://nois-testnet-rpc.polkachu.com:443
+  nois-1-0:
+    <<: *base-config
+    ports:
+      - "18100:3000"
+    environment:
+      RPC_ENDPOINT: https://rpc-nois.sr20de.xyz:443
+  nois-1-1:
+    <<: *base-config
+    ports:
+      - "18101:3000"
+    environment:
+      RPC_ENDPOINT: https://rpc.noismain.mcbnode.online:443
+  nois-1-2:
+    <<: *base-config
+    ports:
+      - "18102:3000"
+    environment:
+      RPC_ENDPOINT: http://nois.rpc.m.stavr.tech:40137

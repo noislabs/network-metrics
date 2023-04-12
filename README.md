@@ -2,8 +2,13 @@
 
 ## How to start
 
-1. Copy `config.example.json` to `config.json` and adjust it to your needs
-2. Run `deno run --allow-read --allow-net --allow-env main.ts`
+Run
+
+```shell
+# make sure deno is installed
+RPC_ENDPOINT=https://nois-testnet-rpc.itrocket.net:443
+deno run --allow-read --allow-net --allow-env main.ts`
+```
 
 ## Installation
 
