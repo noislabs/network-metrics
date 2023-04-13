@@ -40,13 +40,13 @@ if (import.meta.main) {
   const balancesGauge = new promclient.Gauge({
     name: "balances",
     help: "Account balances in NOIS",
-    labelNames: ["account", "rpcEndpoint"] as const,
+    labelNames: ["account", "rpcEndpoint", "chainId"] as const,
   });
 
   // Updates all gauges with the current balances
   const gaugify = () => {
     for (const [key, val] of balances.entries()) {
-      balancesGauge.set({ account: key, rpcEndpoint }, parseInt(val, 10) / 1_000_000);
+      balancesGauge.set({ account: key, rpcEndpoint, chainId }, parseInt(val, 10) / 1_000_000);
     }
   };
 
