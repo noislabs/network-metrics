@@ -22,6 +22,16 @@ const settings: Record<string, ChainSettings> = {
         address: "nois10c0ppz0n57hqrmfp7g7lqs6k4xk9rxhvcfkqt83r8mars2lc57mq0f6cty",
         denom: "unois",
       },
+      {
+        name: "dev-fund",
+        address: "nois13t0dg6503xafyclj8q9e7kpvwaq0dsrq0g8j6a",
+        denom: "unois",
+      },
+      {
+        name: "drand-fund",
+        address: "nois1w6t2stuw6m384838yhpyghac7y98c7f4jk4m58",
+        denom: "unois",
+      },
     ],
   },
   "nois-testnet-005": {
@@ -46,3 +56,4 @@ const settings: Record<string, ChainSettings> = {
 };
 
 export default settings;
+
