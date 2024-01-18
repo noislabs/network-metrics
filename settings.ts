@@ -43,7 +43,7 @@ const settings: Record<string, ChainSettings> = {
       "channel-22": "architech",
       "channel-35": "aura-team",
       "channel-38": "stargaze-governance",
-      "channel-38": "osmosis-nois-team",
+      "channel-41": "osmosis-nois-team",
     }
   },
   "nois-testnet-005": {
