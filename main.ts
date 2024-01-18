@@ -17,15 +17,10 @@ function printableCoin(coin: Coin): string {
   }
 }
 
-// mapping of channel IDs to customer
-const channelDescriptions = {
-  "channel-11": "gelotto-proxy",
-  "channel-16": "example-proxy-1",
-};
 
-function mapChannelToDescription(channelId: string): string {
+function mapChannelToDescription(chainId: string,channelId: string): string {
   // Default to a unknown if the channel is not found
-  return channelDescriptions[channelId] || "unknown-proxy";
+  return settings[chainId].mappingChannels[channelId] || "unknown-proxy";
 }
 
 export interface Account {
@@ -128,12 +123,12 @@ if (import.meta.main) {
     try {
       const contractState = await getContractUsage(
         tmClient,
-        settings[chainId].deployerAddr
+        settings[chainId].gatewayAddr
       );
 
       // array of customer data
       for (const customer of contractState.customers) {
-        const description = mapChannelToDescription(customer.channel_id); // Implement this mapping function
+        const description = mapChannelToDescription(chainId, customer.channel_id); // Implement this mapping function
         customerUsageGauge.set(
           {
             channel: customer.channel_id,
