@@ -6,7 +6,7 @@ import { HttpBatchClient, Tendermint34Client } from "npm:@cosmjs/tendermint-rpc"
 import * as promclient from "npm:prom-client";
 import express from "npm:express@4.18.2";
 import settings from "./settings.ts";
-import { communityPoolFunds, getContractUsage, totalSupply } from "./queries.ts";
+import { communityPoolFunds, getContractUsage, getIbcChannels, totalSupply } from "./queries.ts";
 
 function printableCoin(coin: Coin): string {
   if (coin.denom?.startsWith("u")) {
@@ -18,7 +18,7 @@ function printableCoin(coin: Coin): string {
 }
 
 
-function mapChannelToDescription(chainId: string,channelId: string): string {
+function mapChannelToDescription(chainId: string, channelId: string): string {
   // Default to a unknown if the channel is not found
   return settings[chainId].mappingChannels[channelId] || "unknown-proxy";
 }
@@ -125,17 +125,22 @@ if (import.meta.main) {
         tmClient,
         settings[chainId].gatewayAddr
       );
-
+      
+      // get an array of channels infos
+      const channelsInfo = await getIbcChannels(tmClient);
+      
       // array of customer data
       for (const customer of contractState.customers) {
-        const description = mapChannelToDescription(chainId, customer.channel_id); // Implement this mapping function
+        const description = mapChannelToDescription(chainId, customer.channel_id);
+        const connection = channelsInfo.filter(channel => channel.channelId === customer.channel_id);
+        
         customerUsageGauge.set(
           {
             channel: customer.channel_id,
             rpcEndpoint: rpcEndpoint,
             chainId: chainId,
             description: description,
-            address: customer.payment,
+            address: connection[0].counterparty?.portId?.slice(5)
           },
           customer.requested_beacons
         );

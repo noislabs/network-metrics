@@ -6,6 +6,7 @@ import {
   QueryClient,
   setupBankExtension,
   setupDistributionExtension,
+  setupIbcExtension
 } from "npm:@cosmjs/stargate";
 import { setupWasmExtension } from "npm:@cosmjs/cosmwasm-stargate";
 
@@ -44,4 +45,17 @@ export async function getContractUsage(
     console.error(error);
   }
   return res;
+}
+
+export async function getIbcChannels(
+  tmClient: TendermintClient
+) {
+  const queryClient = QueryClient.withExtensions(tmClient, setupIbcExtension);
+  let res, filteredChannels;
+  try {
+    res = await queryClient.ibc.channel.channels();
+  } catch (error) {
+    console.error(error);
+  }
+  return res.channels;
 }
