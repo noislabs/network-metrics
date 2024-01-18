@@ -9,7 +9,7 @@ import {
 import * as promclient from "npm:prom-client";
 import express from "npm:express@4.18.2";
 import settings from "./settings.ts";
-import { communityPoolFunds, contractBalance, totalSupply } from "./queries.ts";
+import { communityPoolFunds, getContractUsage, totalSupply } from "./queries.ts";
 
 function printableCoin(coin: Coin): string {
   if (coin.denom?.startsWith("u")) {
@@ -81,7 +81,7 @@ if (import.meta.main) {
   // deno-lint-ignore no-explicit-any
   app.get("/metrics", (_req: any, res: any) => {
     gaugify();
-    updateContractState();
+    updateContractUsage();
 
     res.set("Content-Type", promclient.register.contentType);
     promclient.register.metrics().then((metrics) => res.end(metrics));
@@ -136,9 +136,9 @@ if (import.meta.main) {
     );
   };
 
-  const updateContractState = async () => {
+  const updateContractUsage = async () => {
     try {
-      const contractState = await contractBalance(
+      const contractState = await getContractUsage(
         tmClient,
         "nois1xwde9rzqk5u36fke0r9ddmtwvh43n4fv53c5vc462wz8xlnqjhls6d90xc"
       );
@@ -166,12 +166,12 @@ if (import.meta.main) {
   updateAccounts();
   updateTotalSupply();
   updateCommunityPool();
-  updateContractState();
+  updateContractUsage();
 
   setInterval(updateAccounts, 10_000);
   setInterval(updateTotalSupply, 45_000);
   setInterval(updateCommunityPool, 100_000);
-  setInterval(updateContractState, 60_000);
+  setInterval(updateContractUsage, 60_000);
 
   const port = 3000;
   app.listen(port, function () {

@@ -36,7 +36,7 @@ export async function communityPoolFunds(
   }
 }
 
-export async function contractBalance(
+export async function getContractUsage(
   tmClient: TendermintClient,
   contractAddress: string,
 ) {
