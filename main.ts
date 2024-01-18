@@ -2,10 +2,7 @@ import { CosmWasmClient } from "npm:@cosmjs/cosmwasm-stargate";
 import { Coin } from "npm:@cosmjs/stargate";
 import { Decimal } from "npm:@cosmjs/math";
 import { toUtf8 } from "npm:@cosmjs/encoding";
-import {
-  HttpBatchClient,
-  Tendermint34Client,
-} from "npm:@cosmjs/tendermint-rpc";
+import { HttpBatchClient, Tendermint34Client } from "npm:@cosmjs/tendermint-rpc";
 import * as promclient from "npm:prom-client";
 import express from "npm:express@4.18.2";
 import settings from "./settings.ts";
@@ -71,10 +68,7 @@ if (import.meta.main) {
   // Updates all gauges with the current balances
   const gaugify = () => {
     for (const [key, val] of balances.entries()) {
-      balancesGauge.set(
-        { account: key, rpcEndpoint, chainId },
-        parseInt(val, 10) / 1_000_000
-      );
+      balancesGauge.set({ account: key, rpcEndpoint, chainId }, parseInt(val, 10) / 1_000_000);
     }
   };
 
@@ -89,7 +83,7 @@ if (import.meta.main) {
 
   const rpcEndpoint = Deno.env.get("RPC_ENDPOINT");
   if (!rpcEndpoint) {
-    console.error("RPC_ENDPOINT environment variable is not defined");
+    console.error('RPC_ENDPOINT environment variable is not defined');
     Deno.exit(1); // Exit the process with a non-zero code to indicate failure
   }
   const httpBatch = new HttpBatchClient(rpcEndpoint);
@@ -104,25 +98,19 @@ if (import.meta.main) {
   const updateAccounts = () => {
     // debugLog("Getting balances ...");
     for (const account of accounts) {
-      client.getBalance(account.address, account.denom).then(
-        (balance) => {
-          debugLog(`${account.name}: ${printableCoin(balance)}`);
-          balances.set(account.name, balance.amount);
-        },
-        (err) => errorLog(err.toString())
-      );
+      client.getBalance(account.address, account.denom).then((balance) => {
+        debugLog(`${account.name}: ${printableCoin(balance)}`);
+        balances.set(account.name, balance.amount);
+      }, (err) => errorLog(err.toString()));
     }
   };
 
   const updateTotalSupply = () => {
-    totalSupply(tmClient, "unois").then(
-      (balance) => {
-        const exportAccountName = "total supply";
-        debugLog(`${exportAccountName}: ${printableCoin(balance)}`);
-        balances.set(exportAccountName, balance.amount);
-      },
-      (err) => errorLog(err.toString())
-    );
+    totalSupply(tmClient, "unois").then((balance) => {
+      const exportAccountName = "total supply";
+      debugLog(`${exportAccountName}: ${printableCoin(balance)}`);
+      balances.set(exportAccountName, balance.amount);
+    }, (err) => errorLog(err.toString()));
   };
 
   const updateCommunityPool = () => {

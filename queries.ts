@@ -9,10 +9,7 @@ import {
 } from "npm:@cosmjs/stargate";
 import { setupWasmExtension } from "npm:@cosmjs/cosmwasm-stargate";
 
-export async function totalSupply(
-  tmClient: TendermintClient,
-  searchDenom: string
-): Promise<Coin> {
+export async function totalSupply(tmClient: TendermintClient, searchDenom: string): Promise<Coin> {
   const queryClient = QueryClient.withExtensions(tmClient, setupBankExtension);
   return await queryClient.bank.supplyOf(searchDenom);
 }
@@ -22,10 +19,7 @@ export async function communityPoolFunds(
   tmClient: TendermintClient,
   searchDenom: string
 ): Promise<Coin> {
-  const queryClient = QueryClient.withExtensions(
-    tmClient,
-    setupDistributionExtension
-  );
+  const queryClient = QueryClient.withExtensions(tmClient, setupDistributionExtension);
   const resp = await queryClient.distribution.communityPool();
   const unois = resp.pool.find((coin) => coin.denom === searchDenom);
   if (!unois) {
