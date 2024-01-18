@@ -128,7 +128,7 @@ if (import.meta.main) {
     try {
       const contractState = await getContractUsage(
         tmClient,
-        "nois1xwde9rzqk5u36fke0r9ddmtwvh43n4fv53c5vc462wz8xlnqjhls6d90xc"
+        settings[chainId].deployerAddr
       );
 
       // array of customer data

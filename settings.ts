@@ -2,6 +2,7 @@ import { Account } from "./main.ts";
 
 export interface ChainSettings {
   accounts: Account[];
+  deployerAddr: string;
 }
 
 const settings: Record<string, ChainSettings> = {
@@ -33,6 +34,7 @@ const settings: Record<string, ChainSettings> = {
         denom: "unois",
       },
     ],
+    deployerAddr: "nois1acyc05v6fgcdgj88nmz2t40aex9nlnptqpwp5hf8hwg7rhce9uuqgqz5wp"
   },
   "nois-testnet-005": {
     accounts: [
@@ -52,6 +54,7 @@ const settings: Record<string, ChainSettings> = {
         denom: "unois",
       },
     ],
+    deployerAddr: "nois1xwde9rzqk5u36fke0r9ddmtwvh43n4fv53c5vc462wz8xlnqjhls6d90xc"
   },
 };
 
