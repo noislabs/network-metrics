@@ -2,6 +2,8 @@ import { Account } from "./main.ts";
 
 export interface ChainSettings {
   accounts: Account[];
+  gatewayAddr: string;
+  mappingChannels: Record<string, string>
 }
 
 const settings: Record<string, ChainSettings> = {
@@ -33,6 +35,16 @@ const settings: Record<string, ChainSettings> = {
         denom: "unois",
       },
     ],
+    gatewayAddr: "nois1acyc05v6fgcdgj88nmz2t40aex9nlnptqpwp5hf8hwg7rhce9uuqgqz5wp",
+    mappingChannels: {
+      "channel-11": "gelotto-proxy",
+      "channel-2": "juno-nois-team",
+      "channel-20": "injective-governance",
+      "channel-22": "architech",
+      "channel-35": "aura-team",
+      "channel-38": "stargaze-governance",
+      "channel-41": "osmosis-nois-team",
+    }
   },
   "nois-testnet-005": {
     accounts: [
@@ -52,6 +64,11 @@ const settings: Record<string, ChainSettings> = {
         denom: "unois",
       },
     ],
+    gatewayAddr: "nois1xwde9rzqk5u36fke0r9ddmtwvh43n4fv53c5vc462wz8xlnqjhls6d90xc",
+    mappingChannels: {
+      "channel-17": "juno-nois-team",
+      "channel-36": "injective-nois-team",
+    }
   },
 };
 

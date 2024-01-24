@@ -6,7 +6,9 @@ import {
   QueryClient,
   setupBankExtension,
   setupDistributionExtension,
+  setupIbcExtension
 } from "npm:@cosmjs/stargate";
+import { setupWasmExtension } from "npm:@cosmjs/cosmwasm-stargate";
 
 export async function totalSupply(tmClient: TendermintClient, searchDenom: string): Promise<Coin> {
   const queryClient = QueryClient.withExtensions(tmClient, setupBankExtension);
@@ -16,7 +18,7 @@ export async function totalSupply(tmClient: TendermintClient, searchDenom: strin
 /* Queries the community pool funds in full unois. */
 export async function communityPoolFunds(
   tmClient: TendermintClient,
-  searchDenom: string,
+  searchDenom: string
 ): Promise<Coin> {
   const queryClient = QueryClient.withExtensions(tmClient, setupDistributionExtension);
   const resp = await queryClient.distribution.communityPool();
@@ -27,4 +29,33 @@ export async function communityPoolFunds(
     const amount = decodeCosmosSdkDecFromProto(unois.amount).floor().toString();
     return coin(amount, searchDenom);
   }
+}
+
+export async function getContractUsage(
+  tmClient: TendermintClient,
+  contractAddress: string,
+) {
+  const queryClient = QueryClient.withExtensions(tmClient, setupWasmExtension);
+  let res: any;
+  try {
+    res = await queryClient.wasm.queryContractSmart(contractAddress, {
+      customers: {},
+    });
+  } catch (error) {
+    console.error(error);
+  }
+  return res;
+}
+
+export async function getIbcChannels(
+  tmClient: TendermintClient
+) {
+  const queryClient = QueryClient.withExtensions(tmClient, setupIbcExtension);
+  let res, filteredChannels;
+  try {
+    res = await queryClient.ibc.channel.channels();
+  } catch (error) {
+    console.error(error);
+  }
+  return res.channels;
 }

@@ -6,7 +6,7 @@ import { HttpBatchClient, Tendermint34Client } from "npm:@cosmjs/tendermint-rpc"
 import * as promclient from "npm:prom-client";
 import express from "npm:express@4.18.2";
 import settings from "./settings.ts";
-import { communityPoolFunds, totalSupply } from "./queries.ts";
+import { communityPoolFunds, getContractUsage, getIbcChannels, totalSupply } from "./queries.ts";
 
 function printableCoin(coin: Coin): string {
   if (coin.denom?.startsWith("u")) {
@@ -15,6 +15,12 @@ function printableCoin(coin: Coin): string {
   } else {
     return coin.amount + coin.denom;
   }
+}
+
+
+function mapChannelToDescription(chainId: string, channelId: string): string {
+  // Default to a unknown if the channel is not found
+  return settings[chainId].mappingChannels[channelId] || "unknown-proxy";
 }
 
 export interface Account {
@@ -32,7 +38,6 @@ function errorLog(msg: string) {
 }
 
 if (import.meta.main) {
-
   const app = express();
 
   const balances = new Map<string, string>();
@@ -41,6 +46,18 @@ if (import.meta.main) {
     name: "balances",
     help: "Account balances in NOIS",
     labelNames: ["account", "rpcEndpoint", "chainId"] as const,
+  });
+
+  const customerUsageGauge = new promclient.Gauge({
+    name: "customer_usage",
+    help: "Usage data per customer chain",
+    labelNames: [
+      "channel",
+      "rpcEndpoint",
+      "chainId",
+      "description",
+      "address",
+    ] as const,
   });
 
   // Updates all gauges with the current balances
@@ -53,6 +70,7 @@ if (import.meta.main) {
   // deno-lint-ignore no-explicit-any
   app.get("/metrics", (_req: any, res: any) => {
     gaugify();
+    updateContractUsage();
 
     res.set("Content-Type", promclient.register.contentType);
     promclient.register.metrics().then((metrics) => res.end(metrics));
@@ -91,21 +109,57 @@ if (import.meta.main) {
   };
 
   const updateCommunityPool = () => {
-    communityPoolFunds(tmClient, "unois").then((balance) => {
-      const exportAccountName = "community pool";
-      debugLog(`${exportAccountName}: ${printableCoin(balance)}`);
-      balances.set(exportAccountName, balance.amount);
-    }, (err) => errorLog(err.toString()));
+    communityPoolFunds(tmClient, "unois").then(
+      (balance) => {
+        const exportAccountName = "community pool";
+        debugLog(`${exportAccountName}: ${printableCoin(balance)}`);
+        balances.set(exportAccountName, balance.amount);
+      },
+      (err) => errorLog(err.toString())
+    );
+  };
+
+  const updateContractUsage = async () => {
+    try {
+      const contractState = await getContractUsage(
+        tmClient,
+        settings[chainId].gatewayAddr
+      );
+      
+      // get an array of channels infos
+      const channelsInfo = await getIbcChannels(tmClient);
+      
+      // array of customer data
+      for (const customer of contractState.customers) {
+        const description = mapChannelToDescription(chainId, customer.channel_id);
+        const connection = channelsInfo.filter(channel => channel.channelId === customer.channel_id);
+        
+        customerUsageGauge.set(
+          {
+            channel: customer.channel_id,
+            rpcEndpoint: rpcEndpoint,
+            chainId: chainId,
+            description: description,
+            address: connection[0].counterparty?.portId?.slice(5)
+          },
+          customer.requested_beacons
+        );
+      }
+    } catch (err) {
+      errorLog(err.toString());
+    }
   };
 
   // Initial call
   updateAccounts();
   updateTotalSupply();
   updateCommunityPool();
+  updateContractUsage();
 
   setInterval(updateAccounts, 10_000);
   setInterval(updateTotalSupply, 45_000);
   setInterval(updateCommunityPool, 100_000);
+  setInterval(updateContractUsage, 60_000);
 
   const port = 3000;
   app.listen(port, function () {
